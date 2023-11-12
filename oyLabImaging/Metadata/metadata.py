@@ -99,6 +99,7 @@ class Metadata(object):
 
         # If it can't find a supported MD, it exits w/o doing anything
         if self.type == None:
+            # question: is it still useful without metadata?  or should this raise?
             print("Could not find supported metadata.")
             return
 
@@ -118,7 +119,8 @@ class Metadata(object):
         try:
             self._load_metadata(verbose=verbose)
         except Exception as e:
-            print("could not load metadata, file may be corrupted.")
+            # question: is it still useful without metadata?  or should this raise?
+            warnings.warn(f"Could not load metadata: {e}.")
 
         # Handle columns that don't import from text well
         try:
@@ -413,7 +415,6 @@ class Metadata(object):
         -------
         image_table - pd dataframe of metadata image table
         """
-
         import nd2
         import pandas as pd
 
@@ -1129,6 +1130,7 @@ class Metadata(object):
         viewer.window.add_dock_widget(container, name="Metadata Viewer")
 
         matplotlib.use("Qt5Agg")
+        return viewer
 
     def _read_local(
         self, ind_dict, ffield=False, register=False, verbose=True, crop=None, **kwargs
@@ -1524,7 +1526,10 @@ class Metadata(object):
         )
         print("using channel " + Channel + " for drift correction")
         for pos in Position:
-            from pyfftw.interfaces.numpy_fft import fft2, ifft2
+            try:
+                from pyfftw.interfaces.numpy_fft import fft2, ifft2
+            except ImportError:
+                from numpy.fft import fft2, ifft2
 
             DataPre = self.stkread(
                 Position=pos,

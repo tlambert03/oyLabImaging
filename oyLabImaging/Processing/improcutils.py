@@ -9,9 +9,8 @@ import numpy as np
 try:
     from numba import jit
 except ImportError:
-    def jit(obj, **k):
-        return obj
-
+    def jit(obj=None, **k):
+        return obj if obj else (lambda x: x)
 
 def periodic_smooth_decomp(I: np.ndarray) -> (np.ndarray, np.ndarray):
     """Performs periodic-smooth image decomposition
@@ -28,7 +27,10 @@ def periodic_smooth_decomp(I: np.ndarray) -> (np.ndarray, np.ndarray):
 
         Code from: https://github.com/jacobkimmel/ps_decomp
     """
-    from pyfftw.interfaces.numpy_fft import fft2, ifft2
+    try:
+        from pyfftw.interfaces.numpy_fft import fft2, ifft2
+    except ImportError:
+        from numpy.fft import fft2, ifft2
 
     def u2v(u: np.ndarray) -> np.ndarray:
         """Converts the image `u` into the image `v`
